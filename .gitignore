@@ -1,0 +1,32 @@
+# Flutter / Dart
+frontend_flutter/.dart_tool/
+frontend_flutter/.flutter-plugins
+frontend_flutter/.flutter-plugins-dependencies
+frontend_flutter/.idea/
+frontend_flutter/build/
+frontend_flutter/.pub-cache/
+frontend_flutter/.pub/
+frontend_flutter/ios/Flutter/flutter_export_environment.sh
+frontend_flutter/ios/Flutter/Generated.xcconfig
+frontend_flutter/lib/generated_plugin_registrant.dart
+frontend_flutter/*.iml
+frontend_flutter/.DS_Store
+
+# Spring Boot / Java
+backend_springboot/.idea/
+backend_springboot/target/
+backend_springboot/*.iml
+backend_springboot/.mvn/
+backend_springboot/mvnw
+backend_springboot/mvnw.cmd
+backend_springboot/.DS_Store
+
+# General
+*.log
+*.DS_Store
+.env
+*.bak
+*.swp
+*.class
+*.jar
+*.war
