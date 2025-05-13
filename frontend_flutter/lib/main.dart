@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:frontend_flutter/screens/home_screen.dart';
-import 'core/constants.dart';
+import 'package:frontend_flutter/screens/register_screen.dart';
+import 'package:provider/provider.dart';
 import 'screens/login_screen.dart';
-import 'screens/register_screen.dart';
-import 'screens/forgot_password_screen.dart';
 
+import 'screens/home_screen.dart';
+import 'screens/profile_screen.dart';
 import 'screens/post_screen.dart';
 import 'screens/my_networks_screen.dart';
+import 'providers/profile_provider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -17,19 +18,24 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'LinkSphere',
-      theme: AppTheme.lightTheme,
-      initialRoute: '/login',
-      routes: {
-        '/login': (context) => const LoginScreen(),
-        '/register': (context) => const RegisterScreen(),
-        '/forgot-password': (context) => const ForgotPasswordScreen(),
-        '/home': (context) => const HomeScreen(),
-        '/post': (context) => const PostScreen(),
-        '/networks': (context) => const MyNetworksScreen(),
-      },
+    return MultiProvider(
+      providers: [ChangeNotifierProvider(create: (_) => ProfileProvider())],
+      child: MaterialApp(
+        title: 'LinkSphere',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+          visualDensity: VisualDensity.adaptivePlatformDensity,
+        ),
+        initialRoute: '/login',
+        routes: {
+          '/login': (context) => const LoginScreen(),
+          '/register': (context) => const RegisterScreen(),
+          '/home': (context) => const HomeScreen(),
+          '/profile': (context) => const ProfileScreen(),
+          '/post': (context) => const PostScreen(),
+          '/networks': (context) => const MyNetworksScreen(),
+        },
+      ),
     );
   }
 }
