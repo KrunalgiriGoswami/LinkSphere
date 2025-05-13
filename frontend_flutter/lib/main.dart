@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:frontend_flutter/screens/profile_screen.dart';
 import 'core/constants.dart';
+import 'screens/login_screen.dart';
+import 'screens/register_screen.dart';
+import 'screens/forgot_password_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -8,19 +12,17 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'LinkSphere',
       theme: AppTheme.lightTheme,
-      home: const Scaffold(
-        body: Center(
-          child: Text(
-            'Welcome to LinkSphere!',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-        ),
-      ),
+      initialRoute: '/login',
+      routes: {
+        '/login': (context) => const LoginScreen(),
+        '/register': (context) => const RegisterScreen(),
+        '/forgot-password': (context) => const ForgotPasswordScreen(),
+        '/home': (context) => ProfileScreen(),
+      },
     );
   }
 }
