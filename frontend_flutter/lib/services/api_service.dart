@@ -19,8 +19,7 @@ class ApiService {
       final data = jsonDecode(response.body);
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('jwt_token', data['token']);
-      await prefs.setString('email', email); // Store email
-      // Assuming backend returns username; adjust if needed
+      await prefs.setString('email', email);
       await prefs.setString(
         'username',
         data['username'] ?? email.split('@')[0],
@@ -51,8 +50,8 @@ class ApiService {
 
     if (response.statusCode == 200) {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('email', email); // Store email
-      await prefs.setString('username', username); // Store username
+      await prefs.setString('email', email);
+      await prefs.setString('username', username);
       return {'success': true};
     } else {
       return {
@@ -77,9 +76,27 @@ class ApiService {
     );
 
     if (response.statusCode == 200) {
-      return jsonDecode(response.body);
+      var profile = jsonDecode(response.body);
+      // Decode education, experience, location, and contactInfo from JSON strings to lists/maps
+      profile['education'] =
+          profile['education'] != null && profile['education'].isNotEmpty
+              ? jsonDecode(profile['education'])
+              : [];
+      profile['experience'] =
+          profile['experience'] != null && profile['experience'].isNotEmpty
+              ? jsonDecode(profile['experience'])
+              : [];
+      profile['location'] =
+          profile['location'] != null && profile['location'].isNotEmpty
+              ? jsonDecode(profile['location'])
+              : {'city': '', 'postalCode': '', 'state': '', 'country': ''};
+      profile['contactInfo'] =
+          profile['contactInfo'] != null && profile['contactInfo'].isNotEmpty
+              ? jsonDecode(profile['contactInfo'])
+              : {'email': '', 'contactNo': '', 'website': ''};
+      return profile;
     } else {
-      throw Exception('Failed to load profile');
+      throw Exception('Failed to load profile: ${response.body}');
     }
   }
 
@@ -87,6 +104,10 @@ class ApiService {
     String headline,
     String about,
     String skills,
+    List<dynamic> education,
+    List<dynamic> experience,
+    Map<String, dynamic> location,
+    Map<String, dynamic> contactInfo,
   ) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('jwt_token');
@@ -102,11 +123,15 @@ class ApiService {
         'headline': headline,
         'about': about,
         'skills': skills,
+        'education': jsonEncode(education),
+        'experience': jsonEncode(experience),
+        'location': jsonEncode(location),
+        'contactInfo': jsonEncode(contactInfo),
       }),
     );
 
     if (response.statusCode != 200) {
-      throw Exception('Failed to create profile');
+      throw Exception('Failed to create profile: ${response.body}');
     }
   }
 
@@ -114,6 +139,10 @@ class ApiService {
     String headline,
     String about,
     String skills,
+    List<dynamic> education,
+    List<dynamic> experience,
+    Map<String, dynamic> location,
+    Map<String, dynamic> contactInfo,
   ) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('jwt_token');
@@ -129,11 +158,15 @@ class ApiService {
         'headline': headline,
         'about': about,
         'skills': skills,
+        'education': jsonEncode(education),
+        'experience': jsonEncode(experience),
+        'location': jsonEncode(location),
+        'contactInfo': jsonEncode(contactInfo),
       }),
     );
 
     if (response.statusCode != 200) {
-      throw Exception('Failed to update profile');
+      throw Exception('Failed to update profile: ${response.body}');
     }
   }
 }

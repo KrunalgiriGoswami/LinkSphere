@@ -75,6 +75,11 @@ class _HomeScreenState extends State<HomeScreen> {
     if (confirmLogout == true) {
       final prefs = await SharedPreferences.getInstance();
       final profileImagePath = prefs.getString('profile_image_path');
+      final profileProvider = Provider.of<ProfileProvider>(
+        context,
+        listen: false,
+      );
+      await profileProvider.clearProfileData();
       await prefs.clear();
       if (profileImagePath != null) {
         await prefs.setString('profile_image_path', profileImagePath);
@@ -420,6 +425,27 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildViewMode(ProfileProvider profileProvider) {
+    final skillsString = profileProvider.profile?['skills']?.toString() ?? '';
+    final skillsList =
+        skillsString
+            .split(',')
+            .map((skill) => skill.trim())
+            .where((skill) => skill.isNotEmpty)
+            .toList();
+
+    // Handle education and experience as lists
+    if (profileProvider.profile?['education'] is List) {
+    } else if (profileProvider.profile?['education'] is String &&
+        (profileProvider.profile?['education'] as String).isNotEmpty) {
+    } else {}
+
+    if (profileProvider.profile?['experience'] is List) {
+    } else if (profileProvider.profile?['experience'] is String &&
+        (profileProvider.profile?['experience'] as String).isNotEmpty) {
+    } else {}
+
+    // Handle location as a map
+
     return FadeInAnimation(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -485,13 +511,43 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
           const SizedBox(height: 8),
-          Text(
-            profileProvider.profile?['skills'] ?? 'No skills set',
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              color: AppColors.textSecondary,
-            ),
-          ),
+          skillsList.isEmpty
+              ? Text(
+                'No skills set',
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  color: AppColors.textSecondary,
+                ),
+              )
+              : Wrap(
+                spacing: 8.0,
+                runSpacing: 8.0,
+                children:
+                    skillsList.map((skill) {
+                      return Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.accentTeal.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: AppColors.accentTeal.withOpacity(0.3),
+                            width: 1,
+                          ),
+                        ),
+                        child: Text(
+                          skill,
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            color: AppColors.accentTeal,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+              ),
         ],
       ),
     );

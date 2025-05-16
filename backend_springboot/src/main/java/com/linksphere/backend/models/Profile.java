@@ -8,6 +8,10 @@ public class Profile {
     private String headline;
     private String about;
     private String skills;
+    private String education; // Stores JSON string representing a list
+    private String experience; // Stores JSON string representing a list
+    private String location; // Stores JSON string representing a map
+    private String contactInfo; // Stores JSON string representing a map
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -22,6 +26,14 @@ public class Profile {
     public void setAbout(String about) { this.about = about; }
     public String getSkills() { return skills; }
     public void setSkills(String skills) { this.skills = skills; }
+    public String getEducation() { return education; }
+    public void setEducation(String education) { this.education = education; }
+    public String getExperience() { return experience; }
+    public void setExperience(String experience) { this.experience = experience; }
+    public String getLocation() { return location; }
+    public void setLocation(String location) { this.location = location; }
+    public String getContactInfo() { return contactInfo; }
+    public void setContactInfo(String contactInfo) { this.contactInfo = contactInfo; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }

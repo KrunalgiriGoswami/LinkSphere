@@ -1,7 +1,6 @@
 package com.linksphere.backend.services;
 
 import com.linksphere.backend.dto.ProfileRequest;
-
 import com.linksphere.backend.mapper.ProfileMapper;
 import com.linksphere.backend.models.Profile;
 import org.springframework.stereotype.Service;
@@ -20,6 +19,10 @@ public class ProfileService {
         profile.setHeadline(request.getHeadline());
         profile.setAbout(request.getAbout());
         profile.setSkills(request.getSkills());
+        profile.setEducation(request.getEducation());
+        profile.setExperience(request.getExperience());
+        profile.setLocation(request.getLocation());
+        profile.setContactInfo(request.getContactInfo());
         profileMapper.insert(profile);
     }
 
@@ -29,6 +32,10 @@ public class ProfileService {
         profile.setHeadline(request.getHeadline());
         profile.setAbout(request.getAbout());
         profile.setSkills(request.getSkills());
+        profile.setEducation(request.getEducation());
+        profile.setExperience(request.getExperience());
+        profile.setLocation(request.getLocation());
+        profile.setContactInfo(request.getContactInfo());
         profileMapper.update(profile);
     }
 
