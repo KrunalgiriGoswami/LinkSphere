@@ -2,8 +2,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import '../services/api_service.dart';
 
-class ProfileProvider with ChangeNotifier {
+class ProfileProvider extends ChangeNotifier {
   String? _username;
   String? _email;
   File? _profileImage;
@@ -11,6 +12,9 @@ class ProfileProvider with ChangeNotifier {
   File? _bannerImage;
   String? _bannerImagePath;
   Map<String, dynamic>? _profile;
+  final ApiService _apiService = ApiService();
+  bool _isLoading = false;
+  String? _error;
 
   String? get username => _username;
   String? get email => _email;
@@ -19,6 +23,8 @@ class ProfileProvider with ChangeNotifier {
   File? get bannerImage => _bannerImage;
   String? get bannerImagePath => _bannerImagePath;
   Map<String, dynamic>? get profile => _profile;
+  bool get isLoading => _isLoading;
+  String? get error => _error;
 
   ProfileProvider() {
     _loadUserData();
@@ -84,14 +90,12 @@ class ProfileProvider with ChangeNotifier {
       'headline': prefs.getString('headline') ?? '',
       'about': prefs.getString('about') ?? '',
       'skills': prefs.getString('skills') ?? '',
-      'education':
-          educationJson != null && educationJson.isNotEmpty
-              ? jsonDecode(educationJson) as List<dynamic>? ?? []
-              : [],
-      'experience':
-          experienceJson != null && experienceJson.isNotEmpty
-              ? jsonDecode(experienceJson) as List<dynamic>? ?? []
-              : [],
+      'education': educationJson != null && educationJson.isNotEmpty
+          ? jsonDecode(educationJson) as List<dynamic>? ?? []
+          : [],
+      'experience': experienceJson != null && experienceJson.isNotEmpty
+          ? jsonDecode(experienceJson) as List<dynamic>? ?? []
+          : [],
       'location': locationData,
       'contactInfo': contactInfoData,
     };
@@ -178,6 +182,22 @@ class ProfileProvider with ChangeNotifier {
     _email = email;
     await prefs.setString('email', email);
     notifyListeners();
+  }
+
+  Future<void> fetchProfile() async {
+    try {
+      _isLoading = true;
+      _error = null;
+      notifyListeners();
+
+      final profileData = await _apiService.getProfile();
+      _profile = profileData;
+    } catch (e) {
+      _error = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   Future<void> clearProfileData() async {

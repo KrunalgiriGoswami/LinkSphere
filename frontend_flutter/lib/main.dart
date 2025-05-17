@@ -8,6 +8,7 @@ import 'screens/profile_screen.dart';
 import 'screens/post_screen.dart';
 import 'screens/my_networks_screen.dart';
 import 'providers/profile_provider.dart';
+import 'providers/posts_provider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -19,7 +20,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => ProfileProvider())],
+      providers: [
+        ChangeNotifierProvider(create: (_) => ProfileProvider()),
+        ChangeNotifierProvider(create: (_) => PostsProvider()),
+      ],
       child: MaterialApp(
         title: 'LinkSphere',
         theme: ThemeData(

@@ -9,41 +9,43 @@ import '../providers/profile_provider.dart';
 import '../services/api_service.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
-class PostScreen extends StatefulWidget {
-  const PostScreen({super.key});
+class EditPostScreen extends StatefulWidget {
+  final Map<String, dynamic> post;
+
+  const EditPostScreen({super.key, required this.post});
 
   @override
-  State<PostScreen> createState() => _PostScreenState();
+  State<EditPostScreen> createState() => _EditPostScreenState();
 }
 
-class _PostScreenState extends State<PostScreen> {
-  final TextEditingController _descriptionController = TextEditingController();
-  final List<File> _selectedMedia = [];
-  final List<String> _mediaTypes = [];
+class _EditPostScreenState extends State<EditPostScreen> {
+  late TextEditingController _descriptionController;
+  final List<String> _existingMediaUrls = [];
+  final List<String> _existingMediaTypes = [];
+  final List<File> _newMediaFiles = [];
+  final List<String> _newMediaTypes = [];
   bool _isLoading = false;
   final ApiService _apiService = ApiService();
 
   @override
   void initState() {
     super.initState();
-    _loadProfileData();
-  }
+    _descriptionController =
+        TextEditingController(text: widget.post['description'] ?? '');
 
-  Future<void> _loadProfileData() async {
-    try {
-      final profileProvider =
-          Provider.of<ProfileProvider>(context, listen: false);
-      if (profileProvider.profile == null) {
-        await profileProvider.fetchProfile();
-      }
-      if (!mounted) return;
+    // Parse existing media
+    final mediaUrls = widget.post['mediaUrls']?.toString().split(',') ?? [];
+    final mediaTypes = widget.post['mediaTypes']?.toString().split(',') ?? [];
 
-      if (profileProvider.error != null) {
-        _showErrorToast('Error loading profile: ${profileProvider.error}');
+    for (int i = 0; i < mediaUrls.length; i++) {
+      if (mediaUrls[i].isNotEmpty) {
+        _existingMediaUrls.add(mediaUrls[i]);
+        if (i < mediaTypes.length && mediaTypes[i].isNotEmpty) {
+          _existingMediaTypes.add(mediaTypes[i]);
+        } else {
+          _existingMediaTypes.add('image'); // Default to image
+        }
       }
-    } catch (e) {
-      if (!mounted) return;
-      _showErrorToast('Error loading profile: $e');
     }
   }
 
@@ -54,8 +56,8 @@ class _PostScreenState extends State<PostScreen> {
 
       if (image != null) {
         setState(() {
-          _selectedMedia.add(File(image.path));
-          _mediaTypes.add('image');
+          _newMediaFiles.add(File(image.path));
+          _newMediaTypes.add('image');
         });
       }
     } catch (e) {
@@ -70,8 +72,8 @@ class _PostScreenState extends State<PostScreen> {
 
       if (video != null) {
         setState(() {
-          _selectedMedia.add(File(video.path));
-          _mediaTypes.add('video');
+          _newMediaFiles.add(File(video.path));
+          _newMediaTypes.add('video');
         });
       }
     } catch (e) {
@@ -130,10 +132,21 @@ class _PostScreenState extends State<PostScreen> {
     );
   }
 
-  void _removeMedia(int index) {
+  void _removeExistingMedia(int index) {
     setState(() {
-      _selectedMedia.removeAt(index);
-      _mediaTypes.removeAt(index);
+      _existingMediaUrls.removeAt(index);
+      if (index < _existingMediaTypes.length) {
+        _existingMediaTypes.removeAt(index);
+      }
+    });
+  }
+
+  void _removeNewMedia(int index) {
+    setState(() {
+      _newMediaFiles.removeAt(index);
+      if (index < _newMediaTypes.length) {
+        _newMediaTypes.removeAt(index);
+      }
     });
   }
 
@@ -157,8 +170,10 @@ class _PostScreenState extends State<PostScreen> {
     );
   }
 
-  Future<void> _createPost() async {
-    if (_descriptionController.text.trim().isEmpty && _selectedMedia.isEmpty) {
+  Future<void> _updatePost() async {
+    if (_descriptionController.text.trim().isEmpty &&
+        _existingMediaUrls.isEmpty &&
+        _newMediaFiles.isEmpty) {
       _showErrorToast('Please enter a description or add media');
       return;
     }
@@ -166,24 +181,12 @@ class _PostScreenState extends State<PostScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final profileProvider =
-          Provider.of<ProfileProvider>(context, listen: false);
-      String? profilePicturePath;
-
-      // Get profile picture path - either from local file or network
-      if (profileProvider.profileImage != null) {
-        profilePicturePath = profileProvider.profileImagePath;
-      }
-
-      // Get username
-      final username = profileProvider.username ?? 'User';
-
-      // Upload media files and get URLs
-      List<String> mediaUrls = [];
-      for (int i = 0; i < _selectedMedia.length; i++) {
+      // Upload new media files
+      List<String> newMediaUrls = [];
+      for (int i = 0; i < _newMediaFiles.length; i++) {
         try {
-          String url = await _apiService.uploadMedia(_selectedMedia[i]);
-          mediaUrls.add(url);
+          String url = await _apiService.uploadMedia(_newMediaFiles[i]);
+          newMediaUrls.add(url);
         } catch (e) {
           _showErrorToast('Error uploading media ${i + 1}: ${e.toString()}');
           setState(() => _isLoading = false);
@@ -191,23 +194,25 @@ class _PostScreenState extends State<PostScreen> {
         }
       }
 
-      // Create post with profile picture and username
-      await _apiService.createPost(
+      // Combine existing and new media
+      final allMediaUrls = [..._existingMediaUrls, ...newMediaUrls];
+      final allMediaTypes = [..._existingMediaTypes, ..._newMediaTypes];
+
+      // Update post
+      await _apiService.updatePost(
+        widget.post['id'],
         _descriptionController.text.trim(),
-        mediaUrls.join(','),
-        _mediaTypes.join(','),
-        profilePicturePath,
-        username,
+        allMediaUrls.join(','),
+        allMediaTypes.join(','),
       );
 
       if (!mounted) return;
 
-      _showSuccessToast('Post created successfully!');
-      Navigator.pop(
-          context, true); // Pass true to indicate successful post creation
+      _showSuccessToast('Post updated successfully!');
+      Navigator.pop(context, true); // Pass true to indicate successful update
     } catch (e) {
       if (!mounted) return;
-      _showErrorToast('Error creating post: ${e.toString()}');
+      _showErrorToast('Error updating post: ${e.toString()}');
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -221,7 +226,7 @@ class _PostScreenState extends State<PostScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.primaryBlue,
         title: Text(
-          'Create Post',
+          'Edit Post',
           style: GoogleFonts.poppins(
             color: AppColors.white,
             fontWeight: FontWeight.bold,
@@ -230,9 +235,9 @@ class _PostScreenState extends State<PostScreen> {
         actions: [
           if (!_isLoading)
             TextButton(
-              onPressed: _createPost,
+              onPressed: _updatePost,
               child: Text(
-                'Share',
+                'Save',
                 style: GoogleFonts.poppins(
                   color: AppColors.white,
                   fontWeight: FontWeight.bold,
@@ -248,39 +253,6 @@ class _PostScreenState extends State<PostScreen> {
       ),
       body: Consumer<ProfileProvider>(
         builder: (context, profileProvider, child) {
-          if (profileProvider.isLoading) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-
-          if (profileProvider.error != null) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'Error loading profile',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  ElevatedButton(
-                    onPressed: _loadProfileData,
-                    child: Text(
-                      'Retry',
-                      style: GoogleFonts.poppins(),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          final profile = profileProvider.profile;
-
           return FadeInAnimation(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),
@@ -339,10 +311,10 @@ class _PostScreenState extends State<PostScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Media Preview
-                  if (_selectedMedia.isNotEmpty) ...[
+                  // Existing Media Preview
+                  if (_existingMediaUrls.isNotEmpty) ...[
                     Text(
-                      'Selected Media',
+                      'Current Media',
                       style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -353,7 +325,98 @@ class _PostScreenState extends State<PostScreen> {
                       height: 100,
                       child: ListView.builder(
                         scrollDirection: Axis.horizontal,
-                        itemCount: _selectedMedia.length,
+                        itemCount: _existingMediaUrls.length,
+                        itemBuilder: (context, index) {
+                          final mediaUrl = _existingMediaUrls[index];
+                          final mediaType = index < _existingMediaTypes.length
+                              ? _existingMediaTypes[index]
+                              : 'image';
+
+                          return Stack(
+                            children: [
+                              Container(
+                                width: 100,
+                                height: 100,
+                                margin: const EdgeInsets.only(right: 8),
+                                decoration: BoxDecoration(
+                                  border:
+                                      Border.all(color: AppColors.primaryBlue),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: mediaType == 'image'
+                                    ? ClipRRect(
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: Image.network(
+                                          mediaUrl.startsWith('http')
+                                              ? mediaUrl
+                                              : 'http://10.0.2.2:8080${mediaUrl}',
+                                          fit: BoxFit.cover,
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                            return Container(
+                                              color: Colors.grey[300],
+                                              child: const Center(
+                                                child: Icon(
+                                                  Icons.error,
+                                                  color: Colors.red,
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      )
+                                    : Center(
+                                        child: Icon(
+                                          mediaType == 'video'
+                                              ? Icons.video_file
+                                              : Icons.insert_drive_file,
+                                          size: 40,
+                                          color: AppColors.primaryBlue,
+                                        ),
+                                      ),
+                              ),
+                              Positioned(
+                                top: 4,
+                                right: 12,
+                                child: GestureDetector(
+                                  onTap: () => _removeExistingMedia(index),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: const BoxDecoration(
+                                      color: Colors.red,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.close,
+                                      size: 16,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+
+                  // New Media Preview
+                  if (_newMediaFiles.isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    Text(
+                      'New Media',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      height: 100,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: _newMediaFiles.length,
                         itemBuilder: (context, index) {
                           return Stack(
                             children: [
@@ -366,12 +429,17 @@ class _PostScreenState extends State<PostScreen> {
                                       Border.all(color: AppColors.primaryBlue),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: _mediaTypes[index] == 'image'
-                                    ? Image.file(_selectedMedia[index],
-                                        fit: BoxFit.cover)
+                                child: _newMediaTypes[index] == 'image'
+                                    ? ClipRRect(
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: Image.file(
+                                          _newMediaFiles[index],
+                                          fit: BoxFit.cover,
+                                        ),
+                                      )
                                     : Center(
                                         child: Icon(
-                                          _mediaTypes[index] == 'video'
+                                          _newMediaTypes[index] == 'video'
                                               ? Icons.video_file
                                               : Icons.insert_drive_file,
                                           size: 40,
@@ -383,7 +451,7 @@ class _PostScreenState extends State<PostScreen> {
                                 top: 4,
                                 right: 12,
                                 child: GestureDetector(
-                                  onTap: () => _removeMedia(index),
+                                  onTap: () => _removeNewMedia(index),
                                   child: Container(
                                     padding: const EdgeInsets.all(4),
                                     decoration: const BoxDecoration(
