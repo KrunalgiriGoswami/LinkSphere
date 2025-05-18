@@ -166,4 +166,37 @@ class PostsProvider with ChangeNotifier {
     _likedPosts = {};
     notifyListeners();
   }
+
+  Future<void> searchPosts(String query) async {
+    if (_isLoading) return;
+
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      _posts = await _apiService.searchPosts(query);
+
+      // Check which posts are liked by the current user
+      if (_posts != null) {
+        for (var post in _posts!) {
+          try {
+            int postId = post['id'];
+            bool isLiked = await _apiService.checkIfLiked(postId);
+            _likedPosts[postId] = isLiked;
+          } catch (e) {
+            print('Error checking if post is liked: $e');
+          }
+        }
+      }
+
+      _error = null;
+    } catch (e) {
+      _error = e.toString();
+      _posts = null;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 }

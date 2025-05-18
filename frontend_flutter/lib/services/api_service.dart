@@ -248,15 +248,35 @@ class ApiService {
     final response = await http.get(
       Uri.parse('$baseUrl/posts'),
       headers: {
+        'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
       },
     );
 
     if (response.statusCode == 200) {
-      List<dynamic> data = jsonDecode(response.body);
-      return data.cast<Map<String, dynamic>>();
+      return List<Map<String, dynamic>>.from(jsonDecode(response.body));
     } else {
       throw Exception('Failed to load posts: ${response.body}');
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> searchPosts(String query) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('jwt_token');
+    if (token == null) throw Exception('No token found');
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/posts/search?query=$query'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return List<Map<String, dynamic>>.from(jsonDecode(response.body));
+    } else {
+      throw Exception('Failed to search posts: ${response.body}');
     }
   }
 

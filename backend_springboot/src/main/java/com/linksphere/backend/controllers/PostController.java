@@ -114,4 +114,10 @@ public class PostController {
         postService.deleteComment(postId, commentId, email);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<Post>> searchPosts(@RequestParam String query) {
+        List<Post> posts = postService.searchPosts(query);
+        return ResponseEntity.ok(posts);
+    }
 }

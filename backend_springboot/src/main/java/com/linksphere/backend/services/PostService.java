@@ -289,16 +289,30 @@ public class PostService {
             throw new RuntimeException("User not found");
         }
 
-        // Delete comment
-        String sql = "DELETE FROM comments WHERE id = ? AND post_id = ? AND user_id = ?";
-        int rowsAffected = jdbcTemplate.update(sql, commentId, postId, user.getId());
-
-        if (rowsAffected > 0) {
-            // Update comments count
-            String updateSql = "UPDATE posts SET comments_count = comments_count - 1 WHERE id = ?";
-            jdbcTemplate.update(updateSql, postId);
-        } else {
+        // Verify comment ownership or post ownership
+        String ownershipSql = "SELECT COUNT(*) FROM comments c " +
+                "LEFT JOIN posts p ON c.post_id = p.id " +
+                "WHERE c.id = ? AND (c.user_id = ? OR p.user_id = ?)";
+        int count = jdbcTemplate.queryForObject(ownershipSql, Integer.class, commentId, user.getId(), user.getId());
+        if (count == 0) {
             throw new RuntimeException("Comment not found or user not authorized");
+        }
+
+        String sql = "DELETE FROM comments WHERE id = ?";
+        jdbcTemplate.update(sql, commentId);
+    }
+
+    public List<Post> searchPosts(String query) {
+        logger.info("Searching posts with query: {}", query);
+        try {
+            String searchQuery = "%" + query.toLowerCase() + "%";
+            String sql = "SELECT * FROM posts WHERE LOWER(description) LIKE ? OR LOWER(username) LIKE ? ORDER BY created_at DESC";
+            List<Post> posts = jdbcTemplate.query(sql, new PostMapper(), searchQuery, searchQuery);
+            logger.info("Found {} posts matching the search query", posts.size());
+            return posts;
+        } catch (Exception e) {
+            logger.error("Error searching posts: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to search posts: " + e.getMessage());
         }
     }
 }

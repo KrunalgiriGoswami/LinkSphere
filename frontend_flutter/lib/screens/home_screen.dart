@@ -299,7 +299,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     vertical: 0,
                     horizontal: 16,
                   ),
-                  prefixIcon: Icon(
+                  prefixIcon: const Icon(
                     Icons.search,
                     color: AppColors.white,
                     size: 20,
@@ -309,6 +309,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   color: AppColors.white,
                   fontSize: 14,
                 ),
+                onChanged: (value) {
+                  final postsProvider =
+                      Provider.of<PostsProvider>(context, listen: false);
+                  if (value.isEmpty) {
+                    postsProvider.fetchPosts();
+                  } else {
+                    postsProvider.searchPosts(value);
+                  }
+                },
               ),
             ),
             titleSpacing: 0,
@@ -337,7 +346,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             Align(
                               alignment: Alignment.topRight,
                               child: IconButton(
-                                icon: Icon(
+                                icon: const Icon(
                                   Icons.edit,
                                   color: AppColors.white,
                                   size: 24,
@@ -483,7 +492,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(
+                              const Icon(
                                 Icons.logout,
                                 color: AppColors.white,
                                 size: 22,
@@ -572,7 +581,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     // Get the current user's profile image for consistency
                     final userProfileImage = profileProvider.profileImage;
-                    final username = profileProvider.username ?? 'User';
+                    final userName = profileProvider.username ?? 'User';
 
                     return Card(
                       margin: const EdgeInsets.symmetric(
@@ -621,7 +630,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        post['username'] ?? username,
+                                        userName,
                                         style: GoogleFonts.poppins(
                                           fontWeight: FontWeight.w600,
                                         ),
@@ -809,7 +818,7 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           Row(
             children: [
-              Icon(Icons.title, color: AppColors.accentTeal, size: 20),
+              const Icon(Icons.title, color: AppColors.accentTeal, size: 20),
               const SizedBox(width: 8),
               Text(
                 'Headline',
@@ -832,7 +841,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 16),
           Row(
             children: [
-              Icon(Icons.info, color: AppColors.accentTeal, size: 20),
+              const Icon(Icons.info, color: AppColors.accentTeal, size: 20),
               const SizedBox(width: 8),
               Text(
                 'About',
@@ -855,7 +864,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 16),
           Row(
             children: [
-              Icon(Icons.star, color: AppColors.accentTeal, size: 20),
+              const Icon(Icons.star, color: AppColors.accentTeal, size: 20),
               const SizedBox(width: 8),
               Text(
                 'Skills',
@@ -1023,9 +1032,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                         final comment = comments[index];
                                         return ListTile(
                                           leading: CircleAvatar(
-                                            backgroundImage: const AssetImage(
-                                              'assets/images/default_profile.png',
-                                            ),
+                                            radius: 18,
+                                            backgroundImage:
+                                                profileProvider.profileImage !=
+                                                        null
+                                                    ? FileImage(profileProvider
+                                                        .profileImage!)
+                                                    : const AssetImage(
+                                                        'assets/images/default_profile.png',
+                                                      ) as ImageProvider,
+                                            backgroundColor: AppColors.white,
                                           ),
                                           title: Text(
                                             comment['username'] ??
