@@ -74,7 +74,7 @@ LinkSphere Backend is a robust RESTful API built with Spring Boot and MyBatis to
    ```bash
    git clone https://github.com/KrunalgiriGoswami/backend_springboot.git
    
-   cd frontend_flutter
+   cd backend_springboot
 
  2. Update application.yml:
     ```bash
