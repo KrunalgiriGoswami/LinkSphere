@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
 
 class ApiService {
-  static const String baseUrl = 'http://10.0.2.2:8080/api';
+  static const String baseUrl = 'http://192.168.137.1:8080/api';
   final String? jwtToken;
 
   ApiService({this.jwtToken});
@@ -496,6 +496,102 @@ class ApiService {
       // If the endpoint doesn't exist, we'll try to extract user ID from another source
       // This is a fallback mechanism
       return -1; // Return a default value indicating we couldn't get the ID
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getConnections() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('jwt_token');
+    if (token == null) throw Exception('No token found');
+
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/network/connections'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return List<Map<String, dynamic>>.from(jsonDecode(response.body));
+      } else {
+        throw Exception('Failed to load connections');
+      }
+    } catch (e) {
+      print('Error in getConnections: $e');
+      throw Exception('Failed to load connections');
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getConnectionSuggestions() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('jwt_token');
+    if (token == null) throw Exception('No token found');
+
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/network/suggestions'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return List<Map<String, dynamic>>.from(jsonDecode(response.body));
+      } else {
+        throw Exception('Failed to load suggestions');
+      }
+    } catch (e) {
+      print('Error in getConnectionSuggestions: $e');
+      throw Exception('Failed to load suggestions');
+    }
+  }
+
+  Future<void> connect(int userId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('jwt_token');
+    if (token == null) throw Exception('No token found');
+
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/network/connect/$userId'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to connect with user');
+      }
+    } catch (e) {
+      print('Error in connect: $e');
+      throw Exception('Failed to connect with user');
+    }
+  }
+
+  Future<void> disconnect(int userId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('jwt_token');
+    if (token == null) throw Exception('No token found');
+
+    try {
+      final response = await http.delete(
+        Uri.parse('$baseUrl/api/network/disconnect/$userId'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to disconnect from user');
+      }
+    } catch (e) {
+      print('Error in disconnect: $e');
+      throw Exception('Failed to disconnect from user');
     }
   }
 }

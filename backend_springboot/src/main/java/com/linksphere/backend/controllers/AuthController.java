@@ -2,6 +2,7 @@ package com.linksphere.backend.controllers;
 
 import com.linksphere.backend.dto.LoginRequest;
 import com.linksphere.backend.dto.RegisterRequest;
+import com.linksphere.backend.models.User;
 import com.linksphere.backend.services.UserService;
 import com.linksphere.backend.util.JwtUtil;
 import jakarta.validation.Valid;
@@ -10,6 +11,9 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -35,8 +39,15 @@ public class AuthController {
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
-        String jwt = jwtUtil.generateToken(request.getEmail(), userService.findByEmail(request.getEmail()).getRole());
-        return ResponseEntity.ok(new AuthResponse(jwt));
+        
+        User user = userService.findByEmail(request.getEmail());
+        String jwt = jwtUtil.generateToken(request.getEmail(), user.getRole());
+        
+        Map<String, String> response = new HashMap<>();
+        response.put("token", jwt);
+        response.put("username", user.getUsername());
+        
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/forgot-password")
@@ -45,18 +56,6 @@ public class AuthController {
         // In production, generate a reset token and send an email
         System.out.println("Password reset requested for: " + request.getEmail());
         return ResponseEntity.ok("Password reset instructions sent to " + request.getEmail());
-    }
-
-    private static class AuthResponse {
-        private final String token;
-
-        public AuthResponse(String token) {
-            this.token = token;
-        }
-
-        public String getToken() {
-            return token;
-        }
     }
 
     private static class ForgotPasswordRequest {

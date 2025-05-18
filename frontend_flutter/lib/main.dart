@@ -9,6 +9,7 @@ import 'screens/post_screen.dart';
 import 'screens/my_networks_screen.dart';
 import 'providers/profile_provider.dart';
 import 'providers/posts_provider.dart';
+import 'providers/network_provider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -23,8 +24,10 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => ProfileProvider()),
         ChangeNotifierProvider(create: (_) => PostsProvider()),
+        ChangeNotifierProvider(create: (_) => NetworkProvider()),
       ],
       child: MaterialApp(
+        debugShowCheckedModeBanner: false,
         title: 'LinkSphere',
         theme: ThemeData(
           primarySwatch: Colors.blue,

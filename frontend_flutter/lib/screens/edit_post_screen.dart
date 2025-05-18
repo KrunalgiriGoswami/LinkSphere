@@ -305,7 +305,8 @@ class _EditPostScreenState extends State<EditPostScreen> {
                           GoogleFonts.poppins(color: AppColors.textSecondary),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: AppColors.primaryBlue),
+                        borderSide:
+                            const BorderSide(color: AppColors.primaryBlue),
                       ),
                     ),
                   ),

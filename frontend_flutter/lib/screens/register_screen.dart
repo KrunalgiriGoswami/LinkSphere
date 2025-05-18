@@ -92,15 +92,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           labelText: 'Email',
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: AppColors.accentTeal),
+                            borderSide:
+                                const BorderSide(color: AppColors.accentTeal),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: AppColors.accentTeal),
+                            borderSide:
+                                const BorderSide(color: AppColors.accentTeal),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(
+                            borderSide: const BorderSide(
                               color: AppColors.primaryBlue,
                               width: 2,
                             ),
@@ -116,7 +118,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               width: 2,
                             ),
                           ),
-                          prefixIcon: Icon(
+                          prefixIcon: const Icon(
                             Icons.email,
                             color: AppColors.accentTeal,
                           ),
@@ -141,15 +143,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           labelText: 'Username',
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: AppColors.accentTeal),
+                            borderSide:
+                                const BorderSide(color: AppColors.accentTeal),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: AppColors.accentTeal),
+                            borderSide:
+                                const BorderSide(color: AppColors.accentTeal),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(
+                            borderSide: const BorderSide(
                               color: AppColors.primaryBlue,
                               width: 2,
                             ),
@@ -165,7 +169,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               width: 2,
                             ),
                           ),
-                          prefixIcon: Icon(
+                          prefixIcon: const Icon(
                             Icons.person,
                             color: AppColors.accentTeal,
                           ),
@@ -187,15 +191,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           labelText: 'Password',
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: AppColors.accentTeal),
+                            borderSide:
+                                const BorderSide(color: AppColors.accentTeal),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: AppColors.accentTeal),
+                            borderSide:
+                                const BorderSide(color: AppColors.accentTeal),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(
+                            borderSide: const BorderSide(
                               color: AppColors.primaryBlue,
                               width: 2,
                             ),
@@ -211,7 +217,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               width: 2,
                             ),
                           ),
-                          prefixIcon: Icon(
+                          prefixIcon: const Icon(
                             Icons.lock,
                             color: AppColors.accentTeal,
                           ),
@@ -252,15 +258,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           labelText: 'Confirm Password',
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: AppColors.accentTeal),
+                            borderSide:
+                                const BorderSide(color: AppColors.accentTeal),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: AppColors.accentTeal),
+                            borderSide:
+                                const BorderSide(color: AppColors.accentTeal),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(
+                            borderSide: const BorderSide(
                               color: AppColors.primaryBlue,
                               width: 2,
                             ),
@@ -276,7 +284,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               width: 2,
                             ),
                           ),
-                          prefixIcon: Icon(
+                          prefixIcon: const Icon(
                             Icons.lock,
                             color: AppColors.accentTeal,
                           ),

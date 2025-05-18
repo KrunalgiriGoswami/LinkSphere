@@ -27,7 +27,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           _errorMessage = null;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Password reset email sent (placeholder)')),
+          const SnackBar(
+              content: Text('Password reset email sent (placeholder)')),
         );
       } catch (e) {
         setState(() {
@@ -83,15 +84,17 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           labelText: 'Email',
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: AppColors.accentTeal),
+                            borderSide:
+                                const BorderSide(color: AppColors.accentTeal),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: AppColors.accentTeal),
+                            borderSide:
+                                const BorderSide(color: AppColors.accentTeal),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(
+                            borderSide: const BorderSide(
                               color: AppColors.primaryBlue,
                               width: 2,
                             ),
@@ -107,7 +110,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                               width: 2,
                             ),
                           ),
-                          prefixIcon: Icon(
+                          prefixIcon: const Icon(
                             Icons.email,
                             color: AppColors.accentTeal,
                           ),

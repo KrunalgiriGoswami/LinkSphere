@@ -5,7 +5,6 @@ import com.linksphere.backend.dto.PostRequest;
 import com.linksphere.backend.models.Comment;
 import com.linksphere.backend.models.Post;
 import com.linksphere.backend.services.PostService;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;

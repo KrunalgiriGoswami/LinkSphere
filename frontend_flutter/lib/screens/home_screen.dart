@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend_flutter/screens/edit_post_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -664,6 +665,67 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ],
                                   ),
                                 ),
+                                PopupMenuButton<String>(
+                                  icon: const Icon(Icons.more_vert),
+                                  onSelected: (value) =>
+                                      _handlePostAction(value, post),
+                                  itemBuilder: (BuildContext context) {
+                                    final List<PopupMenuEntry<String>> items = [
+                                      PopupMenuItem<String>(
+                                        value: 'save',
+                                        child: Row(
+                                          children: [
+                                            const Icon(Icons.bookmark_border),
+                                            const SizedBox(width: 8),
+                                            Text(
+                                              'Save Post',
+                                              style: GoogleFonts.poppins(),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ];
+
+                                    // Only show edit and delete options for user's own posts
+                                    if (post['username'] ==
+                                        profileProvider.username) {
+                                      items.addAll([
+                                        PopupMenuItem<String>(
+                                          value: 'edit',
+                                          child: Row(
+                                            children: [
+                                              const Icon(Icons.edit),
+                                              const SizedBox(width: 8),
+                                              Text(
+                                                'Edit Post',
+                                                style: GoogleFonts.poppins(),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        PopupMenuItem<String>(
+                                          value: 'delete',
+                                          child: Row(
+                                            children: [
+                                              const Icon(
+                                                Icons.delete,
+                                                color: Colors.red,
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Text(
+                                                'Delete Post',
+                                                style: GoogleFonts.poppins(
+                                                  color: Colors.red,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ]);
+                                    }
+                                    return items;
+                                  },
+                                ),
                               ],
                             ),
                           ),
@@ -1178,6 +1240,111 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         );
       }
+    }
+  }
+
+  // Add this method to handle post actions
+  Future<void> _handlePostAction(
+      String action, Map<String, dynamic> post) async {
+    switch (action) {
+      case 'save':
+        // TODO: Implement save post functionality
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Post saved successfully',
+                style: GoogleFonts.poppins(),
+              ),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+        break;
+      case 'edit':
+        // Navigate to edit post screen
+        final bool? edited = await Navigator.push<bool>(
+          context,
+          MaterialPageRoute(
+            builder: (context) => EditPostScreen(post: post),
+          ),
+        );
+        if (edited == true) {
+          // Refresh posts list after editing
+          final postsProvider =
+              Provider.of<PostsProvider>(context, listen: false);
+          await postsProvider.fetchPosts();
+        }
+        break;
+      case 'delete':
+        // Show confirmation dialog before deleting
+        final bool? confirm = await showDialog<bool>(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text(
+                'Delete Post',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              content: Text(
+                'Are you sure you want to delete this post?',
+                style: GoogleFonts.poppins(),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: Text(
+                    'Cancel',
+                    style: GoogleFonts.poppins(),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: Text(
+                    'Delete',
+                    style: GoogleFonts.poppins(
+                      color: Colors.red,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+
+        if (confirm == true) {
+          try {
+            final postsProvider =
+                Provider.of<PostsProvider>(context, listen: false);
+            await postsProvider.deletePost(post['id']);
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    'Post deleted successfully',
+                    style: GoogleFonts.poppins(),
+                  ),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            }
+          } catch (e) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    'Failed to delete post: ${e.toString()}',
+                    style: GoogleFonts.poppins(),
+                  ),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          }
+        }
+        break;
     }
   }
 }
