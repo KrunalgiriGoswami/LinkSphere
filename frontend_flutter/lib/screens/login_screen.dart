@@ -77,241 +77,238 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.secondaryGray,
-      body:
-          _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : Center(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                  child: FadeInAnimation(
-                    child: Card(
-                      elevation: 8,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(24.0),
-                        child: Form(
-                          key: _formKey,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Image.asset(
-                                'assets/images/logo.png',
-                                height: 100,
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: FadeInAnimation(
+                  child: Card(
+                    elevation: 8,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Image.asset(
+                              'assets/images/logo.png',
+                              height: 100,
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              'LinkSphere',
+                              style: GoogleFonts.poppins(
+                                fontSize: 36,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primaryBlue,
                               ),
-                              const SizedBox(height: 3),
-                              Text(
-                                'LinkSphere',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 36,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.primaryBlue,
-                                ),
+                            ),
+                            const SizedBox(height: 20),
+                            Text(
+                              'Sign in to connect professionally',
+                              style: GoogleFonts.poppins(
+                                fontSize: 16,
+                                color: AppColors.textSecondary,
                               ),
-                              const SizedBox(height: 20),
-                              Text(
-                                'Sign in to connect professionally',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 16,
-                                  color: AppColors.textSecondary,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 24),
-                              TextFormField(
-                                controller: _emailController,
-                                decoration: InputDecoration(
-                                  labelText: 'Email',
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide(
-                                      color: AppColors.accentTeal,
-                                    ),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide(
-                                      color: AppColors.accentTeal,
-                                    ),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide(
-                                      color: AppColors.primaryBlue,
-                                      width: 2,
-                                    ),
-                                  ),
-                                  errorBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: const BorderSide(
-                                      color: Colors.red,
-                                    ),
-                                  ),
-                                  focusedErrorBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: const BorderSide(
-                                      color: Colors.red,
-                                      width: 2,
-                                    ),
-                                  ),
-                                  prefixIcon: Icon(
-                                    Icons.email,
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 24),
+                            TextFormField(
+                              controller: _emailController,
+                              decoration: InputDecoration(
+                                labelText: 'Email',
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
                                     color: AppColors.accentTeal,
                                   ),
                                 ),
-                                keyboardType: TextInputType.emailAddress,
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please enter your email';
-                                  }
-                                  if (!RegExp(
-                                    r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-                                  ).hasMatch(value)) {
-                                    return 'Please enter a valid email';
-                                  }
-                                  return null;
-                                },
-                              ),
-                              const SizedBox(height: 16),
-                              TextFormField(
-                                controller: _passwordController,
-                                decoration: InputDecoration(
-                                  labelText: 'Password',
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide(
-                                      color: AppColors.accentTeal,
-                                    ),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide(
-                                      color: AppColors.accentTeal,
-                                    ),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide(
-                                      color: AppColors.primaryBlue,
-                                      width: 2,
-                                    ),
-                                  ),
-                                  errorBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: const BorderSide(
-                                      color: Colors.red,
-                                    ),
-                                  ),
-                                  focusedErrorBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: const BorderSide(
-                                      color: Colors.red,
-                                      width: 2,
-                                    ),
-                                  ),
-                                  prefixIcon: Icon(
-                                    Icons.lock,
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
                                     color: AppColors.accentTeal,
                                   ),
-                                  suffixIcon: IconButton(
-                                    icon: Icon(
-                                      _isPasswordVisible
-                                          ? Icons.visibility
-                                          : Icons.visibility_off,
-                                      color: AppColors.accentTeal,
-                                    ),
-                                    onPressed: () {
-                                      setState(() {
-                                        _isPasswordVisible =
-                                            !_isPasswordVisible;
-                                      });
-                                    },
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                    color: AppColors.primaryBlue,
+                                    width: 2,
                                   ),
                                 ),
-                                obscureText: !_isPasswordVisible,
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please enter your password';
-                                  }
-                                  if (value.length < 8) {
-                                    return 'Password must be at least 8 characters';
-                                  }
-                                  if (!RegExp(
-                                    r'^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$',
-                                  ).hasMatch(value)) {
-                                    return 'Password must include an uppercase letter, a number, and a special character';
-                                  }
-                                  return null;
-                                },
+                                errorBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: const BorderSide(
+                                    color: Colors.red,
+                                  ),
+                                ),
+                                focusedErrorBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: const BorderSide(
+                                    color: Colors.red,
+                                    width: 2,
+                                  ),
+                                ),
+                                prefixIcon: Icon(
+                                  Icons.email,
+                                  color: AppColors.accentTeal,
+                                ),
                               ),
-                              const SizedBox(height: 16),
-                              Align(
-                                alignment: Alignment.centerRight,
-                                child: TextButton(
+                              keyboardType: TextInputType.emailAddress,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter your email';
+                                }
+                                if (!RegExp(
+                                  r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                                ).hasMatch(value)) {
+                                  return 'Please enter a valid email';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              controller: _passwordController,
+                              decoration: InputDecoration(
+                                labelText: 'Password',
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                    color: AppColors.accentTeal,
+                                  ),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                    color: AppColors.accentTeal,
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                    color: AppColors.primaryBlue,
+                                    width: 2,
+                                  ),
+                                ),
+                                errorBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: const BorderSide(
+                                    color: Colors.red,
+                                  ),
+                                ),
+                                focusedErrorBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: const BorderSide(
+                                    color: Colors.red,
+                                    width: 2,
+                                  ),
+                                ),
+                                prefixIcon: Icon(
+                                  Icons.lock,
+                                  color: AppColors.accentTeal,
+                                ),
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _isPasswordVisible
+                                        ? Icons.visibility
+                                        : Icons.visibility_off,
+                                    color: AppColors.accentTeal,
+                                  ),
                                   onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder:
-                                            (context) =>
-                                                const ForgotPasswordScreen(),
-                                      ),
-                                    );
+                                    setState(() {
+                                      _isPasswordVisible = !_isPasswordVisible;
+                                    });
                                   },
-                                  child: Text(
-                                    'Forgot Password?',
-                                    style: GoogleFonts.poppins(
-                                      color: AppColors.accentTeal,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
                                 ),
                               ),
-                              const SizedBox(height: 8),
-                              AnimatedScaleButton(
-                                onPressed: _login,
-                                child: Text(
-                                  'Sign In',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              TextButton(
+                              obscureText: !_isPasswordVisible,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter your password';
+                                }
+                                if (value.length < 8) {
+                                  return 'Password must be at least 8 characters';
+                                }
+                                if (!RegExp(
+                                  r'^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$',
+                                ).hasMatch(value)) {
+                                  return 'Password must include an uppercase letter, a number, and a special character';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: TextButton(
                                 onPressed: () {
-                                  Navigator.pushNamed(context, '/register');
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const ForgotPasswordScreen(),
+                                    ),
+                                  );
                                 },
                                 child: Text(
-                                  'New to LinkSphere? Join now',
+                                  'Forgot Password?',
                                   style: GoogleFonts.poppins(
                                     color: AppColors.accentTeal,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
                               ),
-                              if (_errorMessage != null)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 16),
-                                  child: Text(
-                                    _errorMessage!,
-                                    style: GoogleFonts.poppins(
-                                      color: Colors.red,
-                                      fontSize: 14,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
+                            ),
+                            const SizedBox(height: 8),
+                            AnimatedScaleButton(
+                              onPressed: _login,
+                              child: Text(
+                                'Sign In',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                            ],
-                          ),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pushNamed(context, '/register');
+                              },
+                              child: Text(
+                                'New to LinkSphere? Join now',
+                                style: GoogleFonts.poppins(
+                                  color: AppColors.accentTeal,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            if (_errorMessage != null)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 16),
+                                child: Text(
+                                  _errorMessage!,
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.red,
+                                    fontSize: 14,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                          ],
                         ),
                       ),
                     ),
                   ),
                 ),
               ),
+            ),
     );
   }
 }

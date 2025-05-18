@@ -59,7 +59,8 @@ class PostsProvider with ChangeNotifier {
       // Implement retry logic
       if (_retryCount < maxRetries) {
         _retryCount++;
-        await Future.delayed(Duration(seconds: 2)); // Wait before retrying
+        await Future.delayed(
+            const Duration(seconds: 2)); // Wait before retrying
         return fetchPosts(); // Retry the fetch
       }
     } finally {
@@ -68,7 +69,7 @@ class PostsProvider with ChangeNotifier {
     }
   }
 
-  Future<void> likePost(int postId) async {
+  Future<bool> likePost(int postId) async {
     try {
       // If already liked, unlike the post
       if (_likedPosts[postId] == true) {
@@ -84,18 +85,22 @@ class PostsProvider with ChangeNotifier {
         for (var post in _posts!) {
           if (post['id'] == postId) {
             int currentLikes = post['likesCount'] ?? 0;
-            post['likesCount'] = _likedPosts[postId] == true
-                ? currentLikes + 1
-                : (currentLikes > 0 ? currentLikes - 1 : 0);
+            if (_likedPosts[postId] == true) {
+              post['likesCount'] = currentLikes + 1;
+            } else {
+              post['likesCount'] = currentLikes > 0 ? currentLikes - 1 : 0;
+            }
             break;
           }
         }
       }
 
       notifyListeners();
+      return true;
     } catch (e) {
       _error = e.toString();
       notifyListeners();
+      return false;
     }
   }
 

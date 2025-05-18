@@ -10,26 +10,40 @@ class ApiService {
   ApiService({this.jwtToken});
 
   Future<Map<String, dynamic>> login(String email, String password) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/auth/login'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'email': email, 'password': password}),
-    );
-
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('jwt_token', data['token']);
-      await prefs.setString('email', email);
-      await prefs.setString(
-        'username',
-        data['username'] ?? email.split('@')[0],
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email, 'password': password}),
       );
-      return {'success': true, 'token': data['token']};
-    } else {
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('jwt_token', data['token']);
+        await prefs.setString('email', email);
+        await prefs.setString(
+          'username',
+          data['username'] ?? email.split('@')[0],
+        );
+        return {
+          'success': true,
+          'token': data['token'],
+          'username': data['username'] ?? email.split('@')[0],
+        };
+      } else {
+        final errorData = jsonDecode(response.body);
+        return {
+          'success': false,
+          'message': errorData['message'] ??
+              'Login failed. Please check your credentials.',
+        };
+      }
+    } catch (e) {
+      print('Login error: $e');
       return {
         'success': false,
-        'message': jsonDecode(response.body)['message'] ?? 'Login failed',
+        'message': 'Login failed. Please try again later.',
       };
     }
   }

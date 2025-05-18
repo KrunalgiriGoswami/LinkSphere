@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:timeago/timeago.dart'
     as timeago; // Add this package for relative time
+import 'package:share_plus/share_plus.dart';
 import '../core/animated_scale_button.dart';
 import '../core/animations.dart';
 import '../core/constants.dart';
@@ -26,6 +27,16 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   final ApiService _apiService = ApiService();
   String? _authToken;
+  // Add a map to track which posts have their comments expanded
+  final Map<int, bool> _expandedComments = {};
+  // Add a map to store comments for each post
+  final Map<int, List<Map<String, dynamic>>> _postComments = {};
+  // Add a map to track loading state for each post's comments
+  final Map<int, bool> _loadingComments = {};
+  // Add a map for comment text controllers
+  final Map<int, TextEditingController> _commentControllers = {};
+  // Add a map to track liked posts
+  final Map<int, bool> _likedPosts = {};
 
   @override
   void initState() {
@@ -34,7 +45,14 @@ class _HomeScreenState extends State<HomeScreen> {
     // Load posts when screen initializes
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final postsProvider = Provider.of<PostsProvider>(context, listen: false);
-      postsProvider.fetchPosts();
+      postsProvider.fetchPosts().then((_) {
+        // Initialize liked posts map based on user's likes
+        if (postsProvider.posts != null) {
+          for (var post in postsProvider.posts!) {
+            _likedPosts[post['id']] = post['isLikedByUser'] ?? false;
+          }
+        }
+      });
 
       // Also ensure profile data is loaded
       final profileProvider =
@@ -735,31 +753,163 @@ class _HomeScreenState extends State<HomeScreen> {
 
                           // Post Actions
                           Padding(
-                            padding: const EdgeInsets.all(12),
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceAround,
                               children: [
                                 _buildActionButton(
-                                  icon: Icons.thumb_up,
+                                  icon: _likedPosts[post['id']] ?? false
+                                      ? Icons.thumb_up
+                                      : Icons.thumb_up_outlined,
                                   label: '${post['likesCount'] ?? 0}',
-                                  onPressed: () =>
-                                      postsProvider.likePost(post['id']),
+                                  onPressed: () async {
+                                    try {
+                                      final bool success = await postsProvider
+                                          .likePost(post['id']);
+                                      if (success) {
+                                        setState(() {
+                                          _likedPosts[post['id']] =
+                                              !(_likedPosts[post['id']] ??
+                                                  false);
+                                        });
+                                      }
+                                    } catch (e) {
+                                      if (mounted) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                                'Failed to like post: ${e.toString()}'),
+                                            backgroundColor: Colors.red,
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  },
                                 ),
                                 _buildActionButton(
-                                  icon: Icons.comment,
+                                  icon: Icons.comment_outlined,
                                   label: '${post['commentsCount'] ?? 0}',
-                                  onPressed: () =>
-                                      _showCommentDialog(context, post['id']),
+                                  onPressed: () => _toggleComments(post['id']),
                                 ),
                                 _buildActionButton(
-                                  icon: Icons.bookmark,
-                                  label: '${post['savesCount'] ?? 0}',
-                                  onPressed: () =>
-                                      postsProvider.savePost(post['id']),
+                                  icon: Icons.share_outlined,
+                                  label: 'Share',
+                                  onPressed: () => _sharePost(post),
                                 ),
                               ],
                             ),
                           ),
+
+                          // Add expandable comments section
+                          if (_expandedComments[post['id']] ?? false) ...[
+                            const Divider(),
+                            Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Comments list
+                                  if (_loadingComments[post['id']] ?? false)
+                                    const Center(
+                                        child: CircularProgressIndicator())
+                                  else if (_postComments[post['id']] !=
+                                      null) ...[
+                                    for (var comment
+                                        in _postComments[post['id']]!)
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(bottom: 8),
+                                        child: Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            CircleAvatar(
+                                              radius: 18,
+                                              backgroundImage: profileProvider
+                                                          .profileImage !=
+                                                      null
+                                                  ? FileImage(profileProvider
+                                                      .profileImage!)
+                                                  : const AssetImage(
+                                                      'assets/images/default_profile.png',
+                                                    ) as ImageProvider,
+                                              backgroundColor: AppColors.white,
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    userName,
+                                                    style: GoogleFonts.poppins(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    comment['content'] ?? '',
+                                                    style:
+                                                        GoogleFonts.poppins(),
+                                                  ),
+                                                  Text(
+                                                    _getRelativeTime(
+                                                        comment['createdAt']),
+                                                    style: GoogleFonts.poppins(
+                                                      fontSize: 12,
+                                                      color: AppColors
+                                                          .textSecondary,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                  ],
+
+                                  // Comment input field
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: TextField(
+                                          controller: _commentControllers[
+                                                  post['id']] ??=
+                                              TextEditingController(),
+                                          decoration: InputDecoration(
+                                            hintText: 'Write a comment...',
+                                            hintStyle: GoogleFonts.poppins(),
+                                            border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                            ),
+                                            contentPadding:
+                                                const EdgeInsets.symmetric(
+                                              horizontal: 16,
+                                              vertical: 8,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.send),
+                                        onPressed: () => _addComment(
+                                          post['id'],
+                                          _commentControllers[post['id']]
+                                                  ?.text ??
+                                              '',
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     );
@@ -935,237 +1085,99 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Future<void> _showCommentDialog(BuildContext context, int postId) async {
-    final commentController = TextEditingController();
-    final profileProvider =
-        Provider.of<ProfileProvider>(context, listen: false);
+  // Add this method to handle comment expansion
+  void _toggleComments(int postId) async {
+    setState(() {
+      _expandedComments[postId] = !(_expandedComments[postId] ?? false);
+      if (_expandedComments[postId] == true && _postComments[postId] == null) {
+        _loadingComments[postId] = true;
+      }
+    });
 
-    // Fetch comments for this post
-    List<Map<String, dynamic>> comments = [];
-    bool isLoading = true;
-    String? error;
+    if (_expandedComments[postId] == true && _postComments[postId] == null) {
+      try {
+        final comments = await _apiService.getPostComments(postId);
+        setState(() {
+          _postComments[postId] = comments;
+          _loadingComments[postId] = false;
+        });
+      } catch (e) {
+        setState(() {
+          _loadingComments[postId] = false;
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to load comments: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
+  }
 
-    // Show dialog with loading state initially
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext dialogContext) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            // Function to fetch comments
-            void fetchComments() async {
-              try {
-                comments = await _apiService.getPostComments(postId);
-                setState(() {
-                  isLoading = false;
-                  error = null;
-                });
-              } catch (e) {
-                setState(() {
-                  isLoading = false;
-                  error = e.toString();
-                });
-              }
-            }
+  // Add this method to handle adding new comments
+  Future<void> _addComment(int postId, String comment) async {
+    if (comment.trim().isEmpty) return;
 
-            // Fetch comments when dialog opens
-            if (isLoading && error == null) {
-              fetchComments();
-            }
-
-            return AlertDialog(
-              title: Text(
-                'Comments',
-                style: GoogleFonts.poppins(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              content: Container(
-                width: double.maxFinite,
-                constraints: BoxConstraints(
-                  maxHeight: MediaQuery.of(context).size.height * 0.6,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Comments list
-                    Expanded(
-                      child: isLoading
-                          ? const Center(child: CircularProgressIndicator())
-                          : error != null
-                              ? Center(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        'Error loading comments',
-                                        style: GoogleFonts.poppins(
-                                          color: Colors.red,
-                                        ),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            isLoading = true;
-                                            error = null;
-                                          });
-                                          fetchComments();
-                                        },
-                                        child: Text(
-                                          'Retry',
-                                          style: GoogleFonts.poppins(),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              : comments.isEmpty
-                                  ? Center(
-                                      child: Text(
-                                        'No comments yet',
-                                        style: GoogleFonts.poppins(),
-                                      ),
-                                    )
-                                  : ListView.builder(
-                                      itemCount: comments.length,
-                                      itemBuilder: (context, index) {
-                                        final comment = comments[index];
-                                        return ListTile(
-                                          leading: CircleAvatar(
-                                            radius: 18,
-                                            backgroundImage:
-                                                profileProvider.profileImage !=
-                                                        null
-                                                    ? FileImage(profileProvider
-                                                        .profileImage!)
-                                                    : const AssetImage(
-                                                        'assets/images/default_profile.png',
-                                                      ) as ImageProvider,
-                                            backgroundColor: AppColors.white,
-                                          ),
-                                          title: Text(
-                                            comment['username'] ??
-                                                'Unknown User',
-                                            style: GoogleFonts.poppins(
-                                              fontWeight: FontWeight.w600,
-                                              fontSize: 14,
-                                            ),
-                                          ),
-                                          subtitle: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                comment['content'] ?? '',
-                                                style: GoogleFonts.poppins(
-                                                  fontSize: 13,
-                                                ),
-                                              ),
-                                              Text(
-                                                _getRelativeTime(
-                                                    comment['createdAt']),
-                                                style: GoogleFonts.poppins(
-                                                  fontSize: 11,
-                                                  color:
-                                                      AppColors.textSecondary,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          isThreeLine: true,
-                                        );
-                                      },
-                                    ),
-                    ),
-
-                    // Comment input
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 16,
-                          backgroundImage: profileProvider.profileImage != null
-                              ? FileImage(profileProvider.profileImage!)
-                              : const AssetImage(
-                                  'assets/images/default_profile.png',
-                                ) as ImageProvider,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: TextField(
-                            controller: commentController,
-                            decoration: InputDecoration(
-                              hintText: 'Write a comment...',
-                              hintStyle: GoogleFonts.poppins(fontSize: 14),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(20),
-                                borderSide: BorderSide(
-                                  color: AppColors.primaryBlue.withOpacity(0.5),
-                                ),
-                              ),
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 8,
-                              ),
-                            ),
-                            style: GoogleFonts.poppins(fontSize: 14),
-                          ),
-                        ),
-                        IconButton(
-                          icon: Icon(
-                            Icons.send,
-                            color: AppColors.primaryBlue,
-                          ),
-                          onPressed: () async {
-                            if (commentController.text.trim().isNotEmpty) {
-                              // Show loading indicator
-                              setState(() {
-                                isLoading = true;
-                              });
-
-                              try {
-                                // Add comment
-                                await _apiService.addComment(
-                                  postId,
-                                  commentController.text.trim(),
-                                );
-
-                                // Clear input and refresh comments
-                                commentController.clear();
-                                fetchComments();
-
-                                // Also refresh posts to update comment count
-                                final postsProvider =
-                                    Provider.of<PostsProvider>(context,
-                                        listen: false);
-                                postsProvider.fetchPosts();
-                              } catch (e) {
-                                setState(() {
-                                  isLoading = false;
-                                  error = e.toString();
-                                });
-                              }
-                            }
-                          },
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: Text(
-                    'Close',
-                    style: GoogleFonts.poppins(),
-                  ),
-                ),
-              ],
-            );
-          },
+    try {
+      await _apiService.addComment(postId, comment);
+      // Refresh comments for this post
+      final comments = await _apiService.getPostComments(postId);
+      setState(() {
+        _postComments[postId] = comments;
+      });
+      // Clear the comment input
+      _commentControllers[postId]?.clear();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to add comment: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
         );
-      },
-    );
+      }
+    }
+  }
+
+  // Update the share post method
+  Future<void> _sharePost(Map<String, dynamic> post) async {
+    try {
+      String shareText = '';
+
+      // Add post description if available
+      if (post['description'] != null &&
+          post['description'].toString().isNotEmpty) {
+        shareText += post['description'].toString() + '\n\n';
+      }
+
+      // Add post author
+      shareText += 'Posted by ${post['username'] ?? 'Unknown User'}\n';
+
+      // Add media URLs if available
+      final mediaUrls = post['mediaUrls']?.toString().split(',') ?? [];
+      final filteredMediaUrls =
+          mediaUrls.where((url) => url.isNotEmpty).toList();
+
+      if (filteredMediaUrls.isNotEmpty) {
+        shareText += '\nMedia: ${filteredMediaUrls.join('\n')}';
+      }
+
+      // Add app attribution
+      shareText += '\n\nShared via LinkSphere';
+
+      await Share.share(shareText);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to share post: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }
