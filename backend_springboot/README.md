@@ -90,6 +90,23 @@ LinkSphere Backend is a robust RESTful API built with Spring Boot and MyBatis to
 
 ###  📌Ensure MySQL is running and linksphere database is created.
 
+##  📡 API Overview
+
+| Method | Endpoint              | Description           |
+| ------ | --------------------- | --------------------- |
+| POST   | `/auth/register`      | Register new user     |
+| POST   | `/auth/login`         | Login and receive JWT |
+| GET    | `/users/{id}`         | View profile          |
+| PUT    | `/users/{id}`         | Edit profile          |
+| GET    | `/posts`              | View all posts        |
+| POST   | `/posts`              | Create post           |
+| PUT    | `/posts/{id}`         | Edit post             |
+| DELETE | `/posts/{id}`         | Delete post           |
+| POST   | `/posts/{id}/like`    | Like/Dislike post     |
+| POST   | `/posts/{id}/comment` | Add comment           |
+| GET    | `/search/users`       | Search users          |
+| GET    | `/search/posts`       | Search posts          |
+
 
 ## 📊 Database Tables
 
