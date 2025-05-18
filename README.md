@@ -81,15 +81,15 @@ LinkSphere is a comprehensive professional networking platform designed to conne
 ### Setup Instructions
 1. Clone the repository
    ```bash
-   git clone https://github.com/KrunalgiriGoswami/frontend_flutter.git
+   git clone https://github.com/KrunalgiriGoswami/backend_springboot.git
    
-   cd frontend_flutter
+   cd backend_springboot
 
  2. Update application.yml:
     ```bash
     spring:
     datasource:
-    url: jdbc:mysql://localhost:3306/proconnect
+    url: jdbc:mysql://localhost:3306/your_db_name
     username: root
     password: yourpassword
 
